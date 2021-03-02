@@ -1,16 +1,114 @@
 syntax = "proto3";
 
 package gandalf;
-// option go_package = "github.com/mikevel2955/gandalf/pb";
+option go_package = "pb;gandalfPb";
+
+import "google/protobuf/timestamp.proto";
 
 service Gandalf {
-    rpc Do(Request) returns (Response);
+    rpc GetTradingSymbols (EmptyRequest) returns (TradingSymbolsResponse);
+    rpc SymbolTradingPrepare (SymbolRequest) returns (EmptyResponse);
+    rpc SymbolTradingStart (SymbolRequest) returns (EmptyResponse);
+    rpc SymbolTradingStop (SymbolRequest) returns (EmptyResponse);
+    rpc SymbolTradingSuspend (SymbolRequest) returns (EmptyResponse);
+    rpc SymbolTradingResume (SymbolRequest) returns (EmptyResponse);
+
+    rpc GetSymbolBalances (EmptyRequest) returns (SymbolBalancesResponse);
+
+    rpc GetSymbolLimits (GetSymbolLimitsRequest) returns (SymbolLimitsResponse);
+    rpc SetSymbolLimits (SetSymbolLimitsRequest) returns (EmptyResponse);
+
+    rpc GetActiveDeals (DealsRequest) returns (DealsResponse);
+    rpc GetPotentialDeals (DealsRequest) returns (PotentialDealsResponse);
+    rpc CloseDeals(DealsRequest) returns (EmptyResponse);
 }
 
-message Request {
-    string message = 1;
+message EmptyRequest {}
+
+message EmptyResponse {}
+
+message TradingSymbol {
+    enum TradingStatus {
+        PREPARING = 0;
+        ACTIVE = 1;
+        SUSPENDED = 2;
+    }
+
+    string symbol = 1;
+    TradingStatus status = 3;
 }
 
-message Response {
-    string message = 1;
+message TradingSymbolsResponse {
+    repeated TradingSymbol symbols = 1;
+}
+
+message SymbolRequest {
+    string symbol = 1;
+}
+
+message SymbolBalance {
+    string symbol = 1;
+    float amount = 3;
+}
+
+message SymbolBalancesResponse {
+    repeated SymbolBalance balances = 1;
+}
+
+message SymbolLimit {
+    string symbol = 1;
+    float limit = 3;
+}
+
+message SetSymbolLimitsRequest {
+    repeated SymbolLimit limits = 1;
+}
+
+message GetSymbolLimitsRequest {
+    repeated string symbols = 1;
+}
+
+message SymbolLimitsResponse {
+    repeated SymbolLimit limits = 1;
+}
+
+message DealsRequest {
+    bool all = 1;
+    repeated string symbols = 3;
+    google.protobuf.Timestamp dateFrom = 5;
+    google.protobuf.Timestamp dateTo = 7;
+}
+
+message Deal {
+    message DealPrediction {
+        float stop = 1;
+        float max = 3;
+    }
+
+    int64 dealId = 1; // possible format d-165738457656-adausdt or use Huobi's order id
+    string symbol = 3;
+    google.protobuf.Timestamp createdAt = 5;
+    float amount = 7;
+    float amountCurrency = 9;
+    float deltaAmount = 11;
+    float deltaPercent = 13;
+    DealPrediction prediction = 15;
+}
+
+message DealsResponse {
+    repeated Deal deals = 1;
+}
+
+message PotentialDeal {
+    string symbol = 1;
+    float actualRate = 3;
+    float planRate = 5;
+    float limit = 7;
+    string timeFrame = 9;
+    float actualDelta = 11;
+    float planDelta = 13;
+}
+
+message PotentialDealsResponse {
+    repeated PotentialDeal deal = 1;
 }

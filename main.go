@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/mikevel2955/gandalf/pb"
-	"github.com/mikevel2955/gandalf/utils" // @FixMe use github.com/mikevel2955/hermes-utils
+	utils "github.com/mikevel2955/hermes-utils"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -34,7 +34,7 @@ func main() {
 	server := NewService(
 		sugaredLogger,
 	)
-	gandalf.RegisterGandalfServer(grpcServer, server)
+	gandalfPb.RegisterGandalfServer(grpcServer, server)
 
 	listener, err := net.Listen("tcp", config.Addr)
 	if err != nil {

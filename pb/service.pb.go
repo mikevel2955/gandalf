@@ -4,11 +4,12 @@
 // 	protoc        v3.11.4
 // source: pb/service.proto
 
-package gandalf
+package gandalfPb
 
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -29,16 +30,63 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type Request struct {
+type TradingSymbol_TradingStatus int32
+
+const (
+	TradingSymbol_PREPARING TradingSymbol_TradingStatus = 0
+	TradingSymbol_ACTIVE    TradingSymbol_TradingStatus = 1
+	TradingSymbol_SUSPENDED TradingSymbol_TradingStatus = 2
+)
+
+// Enum value maps for TradingSymbol_TradingStatus.
+var (
+	TradingSymbol_TradingStatus_name = map[int32]string{
+		0: "PREPARING",
+		1: "ACTIVE",
+		2: "SUSPENDED",
+	}
+	TradingSymbol_TradingStatus_value = map[string]int32{
+		"PREPARING": 0,
+		"ACTIVE":    1,
+		"SUSPENDED": 2,
+	}
+)
+
+func (x TradingSymbol_TradingStatus) Enum() *TradingSymbol_TradingStatus {
+	p := new(TradingSymbol_TradingStatus)
+	*p = x
+	return p
+}
+
+func (x TradingSymbol_TradingStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TradingSymbol_TradingStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_pb_service_proto_enumTypes[0].Descriptor()
+}
+
+func (TradingSymbol_TradingStatus) Type() protoreflect.EnumType {
+	return &file_pb_service_proto_enumTypes[0]
+}
+
+func (x TradingSymbol_TradingStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TradingSymbol_TradingStatus.Descriptor instead.
+func (TradingSymbol_TradingStatus) EnumDescriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{2, 0}
+}
+
+type EmptyRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 }
 
-func (x *Request) Reset() {
-	*x = Request{}
+func (x *EmptyRequest) Reset() {
+	*x = EmptyRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pb_service_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -46,13 +94,13 @@ func (x *Request) Reset() {
 	}
 }
 
-func (x *Request) String() string {
+func (x *EmptyRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Request) ProtoMessage() {}
+func (*EmptyRequest) ProtoMessage() {}
 
-func (x *Request) ProtoReflect() protoreflect.Message {
+func (x *EmptyRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_pb_service_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -64,28 +112,19 @@ func (x *Request) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Request.ProtoReflect.Descriptor instead.
-func (*Request) Descriptor() ([]byte, []int) {
+// Deprecated: Use EmptyRequest.ProtoReflect.Descriptor instead.
+func (*EmptyRequest) Descriptor() ([]byte, []int) {
 	return file_pb_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Request) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-type Response struct {
+type EmptyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 }
 
-func (x *Response) Reset() {
-	*x = Response{}
+func (x *EmptyResponse) Reset() {
+	*x = EmptyResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pb_service_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -93,13 +132,13 @@ func (x *Response) Reset() {
 	}
 }
 
-func (x *Response) String() string {
+func (x *EmptyResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Response) ProtoMessage() {}
+func (*EmptyResponse) ProtoMessage() {}
 
-func (x *Response) ProtoReflect() protoreflect.Message {
+func (x *EmptyResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_pb_service_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -111,32 +150,1039 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Response.ProtoReflect.Descriptor instead.
-func (*Response) Descriptor() ([]byte, []int) {
+// Deprecated: Use EmptyResponse.ProtoReflect.Descriptor instead.
+func (*EmptyResponse) Descriptor() ([]byte, []int) {
 	return file_pb_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Response) GetMessage() string {
+type TradingSymbol struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string                      `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Status TradingSymbol_TradingStatus `protobuf:"varint,3,opt,name=status,proto3,enum=gandalf.TradingSymbol_TradingStatus" json:"status,omitempty"`
+}
+
+func (x *TradingSymbol) Reset() {
+	*x = TradingSymbol{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TradingSymbol) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TradingSymbol) ProtoMessage() {}
+
+func (x *TradingSymbol) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TradingSymbol.ProtoReflect.Descriptor instead.
+func (*TradingSymbol) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TradingSymbol) GetSymbol() string {
 	if x != nil {
-		return x.Message
+		return x.Symbol
 	}
 	return ""
+}
+
+func (x *TradingSymbol) GetStatus() TradingSymbol_TradingStatus {
+	if x != nil {
+		return x.Status
+	}
+	return TradingSymbol_PREPARING
+}
+
+type TradingSymbolsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbols []*TradingSymbol `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
+}
+
+func (x *TradingSymbolsResponse) Reset() {
+	*x = TradingSymbolsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TradingSymbolsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TradingSymbolsResponse) ProtoMessage() {}
+
+func (x *TradingSymbolsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TradingSymbolsResponse.ProtoReflect.Descriptor instead.
+func (*TradingSymbolsResponse) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TradingSymbolsResponse) GetSymbols() []*TradingSymbol {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+type SymbolRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+}
+
+func (x *SymbolRequest) Reset() {
+	*x = SymbolRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SymbolRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolRequest) ProtoMessage() {}
+
+func (x *SymbolRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolRequest.ProtoReflect.Descriptor instead.
+func (*SymbolRequest) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SymbolRequest) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+type SymbolBalance struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string  `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Amount float32 `protobuf:"fixed32,3,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (x *SymbolBalance) Reset() {
+	*x = SymbolBalance{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SymbolBalance) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolBalance) ProtoMessage() {}
+
+func (x *SymbolBalance) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolBalance.ProtoReflect.Descriptor instead.
+func (*SymbolBalance) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *SymbolBalance) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SymbolBalance) GetAmount() float32 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+type SymbolBalancesResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Balances []*SymbolBalance `protobuf:"bytes,1,rep,name=balances,proto3" json:"balances,omitempty"`
+}
+
+func (x *SymbolBalancesResponse) Reset() {
+	*x = SymbolBalancesResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SymbolBalancesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolBalancesResponse) ProtoMessage() {}
+
+func (x *SymbolBalancesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolBalancesResponse.ProtoReflect.Descriptor instead.
+func (*SymbolBalancesResponse) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SymbolBalancesResponse) GetBalances() []*SymbolBalance {
+	if x != nil {
+		return x.Balances
+	}
+	return nil
+}
+
+type SymbolLimit struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string  `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Limit  float32 `protobuf:"fixed32,3,opt,name=limit,proto3" json:"limit,omitempty"`
+}
+
+func (x *SymbolLimit) Reset() {
+	*x = SymbolLimit{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SymbolLimit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolLimit) ProtoMessage() {}
+
+func (x *SymbolLimit) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolLimit.ProtoReflect.Descriptor instead.
+func (*SymbolLimit) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SymbolLimit) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SymbolLimit) GetLimit() float32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type SetSymbolLimitsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Limits []*SymbolLimit `protobuf:"bytes,1,rep,name=limits,proto3" json:"limits,omitempty"`
+}
+
+func (x *SetSymbolLimitsRequest) Reset() {
+	*x = SetSymbolLimitsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetSymbolLimitsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetSymbolLimitsRequest) ProtoMessage() {}
+
+func (x *SetSymbolLimitsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetSymbolLimitsRequest.ProtoReflect.Descriptor instead.
+func (*SetSymbolLimitsRequest) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SetSymbolLimitsRequest) GetLimits() []*SymbolLimit {
+	if x != nil {
+		return x.Limits
+	}
+	return nil
+}
+
+type GetSymbolLimitsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbols []string `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
+}
+
+func (x *GetSymbolLimitsRequest) Reset() {
+	*x = GetSymbolLimitsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetSymbolLimitsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSymbolLimitsRequest) ProtoMessage() {}
+
+func (x *GetSymbolLimitsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSymbolLimitsRequest.ProtoReflect.Descriptor instead.
+func (*GetSymbolLimitsRequest) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetSymbolLimitsRequest) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+type SymbolLimitsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Limits []*SymbolLimit `protobuf:"bytes,1,rep,name=limits,proto3" json:"limits,omitempty"`
+}
+
+func (x *SymbolLimitsResponse) Reset() {
+	*x = SymbolLimitsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SymbolLimitsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolLimitsResponse) ProtoMessage() {}
+
+func (x *SymbolLimitsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolLimitsResponse.ProtoReflect.Descriptor instead.
+func (*SymbolLimitsResponse) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *SymbolLimitsResponse) GetLimits() []*SymbolLimit {
+	if x != nil {
+		return x.Limits
+	}
+	return nil
+}
+
+type DealsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	All      bool                 `protobuf:"varint,1,opt,name=all,proto3" json:"all,omitempty"`
+	Symbols  []string             `protobuf:"bytes,3,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	DateFrom *timestamp.Timestamp `protobuf:"bytes,5,opt,name=dateFrom,proto3" json:"dateFrom,omitempty"`
+	DateTo   *timestamp.Timestamp `protobuf:"bytes,7,opt,name=dateTo,proto3" json:"dateTo,omitempty"`
+}
+
+func (x *DealsRequest) Reset() {
+	*x = DealsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DealsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DealsRequest) ProtoMessage() {}
+
+func (x *DealsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DealsRequest.ProtoReflect.Descriptor instead.
+func (*DealsRequest) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *DealsRequest) GetAll() bool {
+	if x != nil {
+		return x.All
+	}
+	return false
+}
+
+func (x *DealsRequest) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *DealsRequest) GetDateFrom() *timestamp.Timestamp {
+	if x != nil {
+		return x.DateFrom
+	}
+	return nil
+}
+
+func (x *DealsRequest) GetDateTo() *timestamp.Timestamp {
+	if x != nil {
+		return x.DateTo
+	}
+	return nil
+}
+
+type Deal struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DealId         int64                `protobuf:"varint,1,opt,name=dealId,proto3" json:"dealId,omitempty"` // possible format d-165738457656-adausdt or use Huobi's order id
+	Symbol         string               `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	CreatedAt      *timestamp.Timestamp `protobuf:"bytes,5,opt,name=createdAt,proto3" json:"createdAt,omitempty"`
+	Amount         float32              `protobuf:"fixed32,7,opt,name=amount,proto3" json:"amount,omitempty"`
+	AmountCurrency float32              `protobuf:"fixed32,9,opt,name=amountCurrency,proto3" json:"amountCurrency,omitempty"`
+	DeltaAmount    float32              `protobuf:"fixed32,11,opt,name=deltaAmount,proto3" json:"deltaAmount,omitempty"`
+	DeltaPercent   float32              `protobuf:"fixed32,13,opt,name=deltaPercent,proto3" json:"deltaPercent,omitempty"`
+	Prediction     *Deal_DealPrediction `protobuf:"bytes,15,opt,name=prediction,proto3" json:"prediction,omitempty"`
+}
+
+func (x *Deal) Reset() {
+	*x = Deal{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Deal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Deal) ProtoMessage() {}
+
+func (x *Deal) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Deal.ProtoReflect.Descriptor instead.
+func (*Deal) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *Deal) GetDealId() int64 {
+	if x != nil {
+		return x.DealId
+	}
+	return 0
+}
+
+func (x *Deal) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *Deal) GetCreatedAt() *timestamp.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Deal) GetAmount() float32 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *Deal) GetAmountCurrency() float32 {
+	if x != nil {
+		return x.AmountCurrency
+	}
+	return 0
+}
+
+func (x *Deal) GetDeltaAmount() float32 {
+	if x != nil {
+		return x.DeltaAmount
+	}
+	return 0
+}
+
+func (x *Deal) GetDeltaPercent() float32 {
+	if x != nil {
+		return x.DeltaPercent
+	}
+	return 0
+}
+
+func (x *Deal) GetPrediction() *Deal_DealPrediction {
+	if x != nil {
+		return x.Prediction
+	}
+	return nil
+}
+
+type DealsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Deals []*Deal `protobuf:"bytes,1,rep,name=deals,proto3" json:"deals,omitempty"`
+}
+
+func (x *DealsResponse) Reset() {
+	*x = DealsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DealsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DealsResponse) ProtoMessage() {}
+
+func (x *DealsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DealsResponse.ProtoReflect.Descriptor instead.
+func (*DealsResponse) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DealsResponse) GetDeals() []*Deal {
+	if x != nil {
+		return x.Deals
+	}
+	return nil
+}
+
+type PotentialDeal struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol      string  `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	ActualRate  float32 `protobuf:"fixed32,3,opt,name=actualRate,proto3" json:"actualRate,omitempty"`
+	PlanRate    float32 `protobuf:"fixed32,5,opt,name=planRate,proto3" json:"planRate,omitempty"`
+	Limit       float32 `protobuf:"fixed32,7,opt,name=limit,proto3" json:"limit,omitempty"`
+	TimeFrame   string  `protobuf:"bytes,9,opt,name=timeFrame,proto3" json:"timeFrame,omitempty"`
+	ActualDelta float32 `protobuf:"fixed32,11,opt,name=actualDelta,proto3" json:"actualDelta,omitempty"`
+	PlanDelta   float32 `protobuf:"fixed32,13,opt,name=planDelta,proto3" json:"planDelta,omitempty"`
+}
+
+func (x *PotentialDeal) Reset() {
+	*x = PotentialDeal{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PotentialDeal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PotentialDeal) ProtoMessage() {}
+
+func (x *PotentialDeal) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PotentialDeal.ProtoReflect.Descriptor instead.
+func (*PotentialDeal) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *PotentialDeal) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *PotentialDeal) GetActualRate() float32 {
+	if x != nil {
+		return x.ActualRate
+	}
+	return 0
+}
+
+func (x *PotentialDeal) GetPlanRate() float32 {
+	if x != nil {
+		return x.PlanRate
+	}
+	return 0
+}
+
+func (x *PotentialDeal) GetLimit() float32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *PotentialDeal) GetTimeFrame() string {
+	if x != nil {
+		return x.TimeFrame
+	}
+	return ""
+}
+
+func (x *PotentialDeal) GetActualDelta() float32 {
+	if x != nil {
+		return x.ActualDelta
+	}
+	return 0
+}
+
+func (x *PotentialDeal) GetPlanDelta() float32 {
+	if x != nil {
+		return x.PlanDelta
+	}
+	return 0
+}
+
+type PotentialDealsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Deal []*PotentialDeal `protobuf:"bytes,1,rep,name=deal,proto3" json:"deal,omitempty"`
+}
+
+func (x *PotentialDealsResponse) Reset() {
+	*x = PotentialDealsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PotentialDealsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PotentialDealsResponse) ProtoMessage() {}
+
+func (x *PotentialDealsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PotentialDealsResponse.ProtoReflect.Descriptor instead.
+func (*PotentialDealsResponse) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *PotentialDealsResponse) GetDeal() []*PotentialDeal {
+	if x != nil {
+		return x.Deal
+	}
+	return nil
+}
+
+type Deal_DealPrediction struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Stop float32 `protobuf:"fixed32,1,opt,name=stop,proto3" json:"stop,omitempty"`
+	Max  float32 `protobuf:"fixed32,3,opt,name=max,proto3" json:"max,omitempty"`
+}
+
+func (x *Deal_DealPrediction) Reset() {
+	*x = Deal_DealPrediction{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_service_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Deal_DealPrediction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Deal_DealPrediction) ProtoMessage() {}
+
+func (x *Deal_DealPrediction) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_service_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Deal_DealPrediction.ProtoReflect.Descriptor instead.
+func (*Deal_DealPrediction) Descriptor() ([]byte, []int) {
+	return file_pb_service_proto_rawDescGZIP(), []int{12, 0}
+}
+
+func (x *Deal_DealPrediction) GetStop() float32 {
+	if x != nil {
+		return x.Stop
+	}
+	return 0
+}
+
+func (x *Deal_DealPrediction) GetMax() float32 {
+	if x != nil {
+		return x.Max
+	}
+	return 0
 }
 
 var File_pb_service_proto protoreflect.FileDescriptor
 
 var file_pb_service_proto_rawDesc = []byte{
 	0x0a, 0x10, 0x70, 0x62, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x12, 0x07, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x22, 0x23, 0x0a, 0x07, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
-	0x22, 0x24, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07,
-	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x32, 0x34, 0x0a, 0x07, 0x47, 0x61, 0x6e, 0x64, 0x61, 0x6c,
-	0x66, 0x12, 0x29, 0x0a, 0x02, 0x44, 0x6f, 0x12, 0x10, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c,
-	0x66, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x11, 0x2e, 0x67, 0x61, 0x6e, 0x64,
-	0x61, 0x6c, 0x66, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x6f, 0x12, 0x07, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x1a, 0x1f, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d,
+	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x0e, 0x0a, 0x0c,
+	0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x0f, 0x0a, 0x0d,
+	0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xa0, 0x01,
+	0x0a, 0x0d, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12,
+	0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x3c, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x24, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c,
+	0x66, 0x2e, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x2e,
+	0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x39, 0x0a, 0x0d, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x0d, 0x0a, 0x09, 0x50, 0x52, 0x45, 0x50, 0x41, 0x52,
+	0x49, 0x4e, 0x47, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x41, 0x43, 0x54, 0x49, 0x56, 0x45, 0x10,
+	0x01, 0x12, 0x0d, 0x0a, 0x09, 0x53, 0x55, 0x53, 0x50, 0x45, 0x4e, 0x44, 0x45, 0x44, 0x10, 0x02,
+	0x22, 0x4a, 0x0a, 0x16, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x6d, 0x62, 0x6f,
+	0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x30, 0x0a, 0x07, 0x73, 0x79,
+	0x6d, 0x62, 0x6f, 0x6c, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x67, 0x61,
+	0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x6d,
+	0x62, 0x6f, 0x6c, 0x52, 0x07, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x73, 0x22, 0x27, 0x0a, 0x0d,
+	0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a,
+	0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
+	0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x22, 0x3f, 0x0a, 0x0d, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x42,
+	0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x16,
+	0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x02, 0x52, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x4c, 0x0a, 0x16, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c,
+	0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x32, 0x0a, 0x08, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d,
+	0x62, 0x6f, 0x6c, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x52, 0x08, 0x62, 0x61, 0x6c, 0x61,
+	0x6e, 0x63, 0x65, 0x73, 0x22, 0x3b, 0x0a, 0x0b, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69,
+	0x6d, 0x69, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x14, 0x0a, 0x05, 0x6c,
+	0x69, 0x6d, 0x69, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x02, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69,
+	0x74, 0x22, 0x46, 0x0a, 0x16, 0x53, 0x65, 0x74, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69,
+	0x6d, 0x69, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2c, 0x0a, 0x06, 0x6c,
+	0x69, 0x6d, 0x69, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x67, 0x61,
+	0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69,
+	0x74, 0x52, 0x06, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x22, 0x32, 0x0a, 0x16, 0x47, 0x65, 0x74,
+	0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x09, 0x52, 0x07, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x73, 0x22, 0x44, 0x0a,
+	0x14, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x06, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x18,
+	0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e,
+	0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x52, 0x06, 0x6c, 0x69, 0x6d,
+	0x69, 0x74, 0x73, 0x22, 0xa6, 0x01, 0x0a, 0x0c, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x6c, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x08, 0x52, 0x03, 0x61, 0x6c, 0x6c, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c,
+	0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x73,
+	0x12, 0x36, 0x0a, 0x08, 0x64, 0x61, 0x74, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x08,
+	0x64, 0x61, 0x74, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x12, 0x32, 0x0a, 0x06, 0x64, 0x61, 0x74, 0x65,
+	0x54, 0x6f, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
+	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73,
+	0x74, 0x61, 0x6d, 0x70, 0x52, 0x06, 0x64, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x22, 0xec, 0x02, 0x0a,
+	0x04, 0x44, 0x65, 0x61, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x65, 0x61, 0x6c, 0x49, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x64, 0x65, 0x61, 0x6c, 0x49, 0x64, 0x12, 0x16, 0x0a,
+	0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
+	0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x38, 0x0a, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64,
+	0x41, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
+	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73,
+	0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12,
+	0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x02, 0x52,
+	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x26, 0x0a, 0x0e, 0x61, 0x6d, 0x6f, 0x75, 0x6e,
+	0x74, 0x43, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x18, 0x09, 0x20, 0x01, 0x28, 0x02, 0x52,
+	0x0e, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x43, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x12,
+	0x20, 0x0a, 0x0b, 0x64, 0x65, 0x6c, 0x74, 0x61, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x0b,
+	0x20, 0x01, 0x28, 0x02, 0x52, 0x0b, 0x64, 0x65, 0x6c, 0x74, 0x61, 0x41, 0x6d, 0x6f, 0x75, 0x6e,
+	0x74, 0x12, 0x22, 0x0a, 0x0c, 0x64, 0x65, 0x6c, 0x74, 0x61, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e,
+	0x74, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0c, 0x64, 0x65, 0x6c, 0x74, 0x61, 0x50, 0x65,
+	0x72, 0x63, 0x65, 0x6e, 0x74, 0x12, 0x3c, 0x0a, 0x0a, 0x70, 0x72, 0x65, 0x64, 0x69, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x61, 0x6e, 0x64,
+	0x61, 0x6c, 0x66, 0x2e, 0x44, 0x65, 0x61, 0x6c, 0x2e, 0x44, 0x65, 0x61, 0x6c, 0x50, 0x72, 0x65,
+	0x64, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x70, 0x72, 0x65, 0x64, 0x69, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x1a, 0x36, 0x0a, 0x0e, 0x44, 0x65, 0x61, 0x6c, 0x50, 0x72, 0x65, 0x64, 0x69,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x74, 0x6f, 0x70, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x02, 0x52, 0x04, 0x73, 0x74, 0x6f, 0x70, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x61, 0x78,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x02, 0x52, 0x03, 0x6d, 0x61, 0x78, 0x22, 0x34, 0x0a, 0x0d, 0x44,
+	0x65, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x23, 0x0a, 0x05,
+	0x64, 0x65, 0x61, 0x6c, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x67, 0x61,
+	0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x44, 0x65, 0x61, 0x6c, 0x52, 0x05, 0x64, 0x65, 0x61, 0x6c,
+	0x73, 0x22, 0xd7, 0x01, 0x0a, 0x0d, 0x50, 0x6f, 0x74, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x44,
+	0x65, 0x61, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x1e, 0x0a, 0x0a, 0x61,
+	0x63, 0x74, 0x75, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x02, 0x52,
+	0x0a, 0x61, 0x63, 0x74, 0x75, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70,
+	0x6c, 0x61, 0x6e, 0x52, 0x61, 0x74, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x02, 0x52, 0x08, 0x70,
+	0x6c, 0x61, 0x6e, 0x52, 0x61, 0x74, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74,
+	0x18, 0x07, 0x20, 0x01, 0x28, 0x02, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x1c, 0x0a,
+	0x09, 0x74, 0x69, 0x6d, 0x65, 0x46, 0x72, 0x61, 0x6d, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x46, 0x72, 0x61, 0x6d, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x61,
+	0x63, 0x74, 0x75, 0x61, 0x6c, 0x44, 0x65, 0x6c, 0x74, 0x61, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x02,
+	0x52, 0x0b, 0x61, 0x63, 0x74, 0x75, 0x61, 0x6c, 0x44, 0x65, 0x6c, 0x74, 0x61, 0x12, 0x1c, 0x0a,
+	0x09, 0x70, 0x6c, 0x61, 0x6e, 0x44, 0x65, 0x6c, 0x74, 0x61, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x02,
+	0x52, 0x09, 0x70, 0x6c, 0x61, 0x6e, 0x44, 0x65, 0x6c, 0x74, 0x61, 0x22, 0x44, 0x0a, 0x16, 0x50,
+	0x6f, 0x74, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a, 0x0a, 0x04, 0x64, 0x65, 0x61, 0x6c, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x50, 0x6f,
+	0x74, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x44, 0x65, 0x61, 0x6c, 0x52, 0x04, 0x64, 0x65, 0x61,
+	0x6c, 0x32, 0xef, 0x06, 0x0a, 0x07, 0x47, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x12, 0x4b, 0x0a,
+	0x11, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x6d, 0x62, 0x6f,
+	0x6c, 0x73, 0x12, 0x15, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70,
+	0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x67, 0x61, 0x6e, 0x64,
+	0x61, 0x6c, 0x66, 0x2e, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x6d, 0x62, 0x6f,
+	0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x46, 0x0a, 0x14, 0x53, 0x79,
+	0x6d, 0x62, 0x6f, 0x6c, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x50, 0x72, 0x65, 0x70, 0x61,
+	0x72, 0x65, 0x12, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d,
+	0x62, 0x6f, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x61, 0x6e,
+	0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x44, 0x0a, 0x12, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x54, 0x72, 0x61, 0x64,
+	0x69, 0x6e, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x12, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61,
+	0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x43, 0x0a, 0x11, 0x53, 0x79, 0x6d, 0x62,
+	0x6f, 0x6c, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x74, 0x6f, 0x70, 0x12, 0x16, 0x2e,
+	0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e,
+	0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x46, 0x0a,
+	0x14, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x53, 0x75,
+	0x73, 0x70, 0x65, 0x6e, 0x64, 0x12, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e,
+	0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e,
+	0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x45, 0x0a, 0x13, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x54,
+	0x72, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x75, 0x6d, 0x65, 0x12, 0x16, 0x2e, 0x67,
+	0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45,
+	0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4b, 0x0a, 0x11,
+	0x47, 0x65, 0x74, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65,
+	0x73, 0x12, 0x15, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74,
+	0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61,
+	0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65,
+	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x51, 0x0a, 0x0f, 0x47, 0x65, 0x74,
+	0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x12, 0x1f, 0x2e, 0x67,
+	0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c,
+	0x4c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e,
+	0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69,
+	0x6d, 0x69, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4a, 0x0a, 0x0f,
+	0x53, 0x65, 0x74, 0x53, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x12,
+	0x1f, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x53, 0x65, 0x74, 0x53, 0x79, 0x6d,
+	0x62, 0x6f, 0x6c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3f, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x41,
+	0x63, 0x74, 0x69, 0x76, 0x65, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x12, 0x15, 0x2e, 0x67, 0x61, 0x6e,
+	0x64, 0x61, 0x6c, 0x66, 0x2e, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x16, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x44, 0x65, 0x61, 0x6c,
+	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4b, 0x0a, 0x11, 0x47, 0x65, 0x74,
+	0x50, 0x6f, 0x74, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x12, 0x15,
+	0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e,
+	0x50, 0x6f, 0x74, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x44, 0x65, 0x61, 0x6c, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x0a, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x44,
+	0x65, 0x61, 0x6c, 0x73, 0x12, 0x15, 0x2e, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x44,
+	0x65, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x61,
+	0x6e, 0x64, 0x61, 0x6c, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x42, 0x0e, 0x5a, 0x0c, 0x70, 0x62, 0x3b, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x6c,
+	0x66, 0x50, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -151,19 +1197,70 @@ func file_pb_service_proto_rawDescGZIP() []byte {
 	return file_pb_service_proto_rawDescData
 }
 
-var file_pb_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_pb_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_pb_service_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_pb_service_proto_goTypes = []interface{}{
-	(*Request)(nil),  // 0: gandalf.Request
-	(*Response)(nil), // 1: gandalf.Response
+	(TradingSymbol_TradingStatus)(0), // 0: gandalf.TradingSymbol.TradingStatus
+	(*EmptyRequest)(nil),             // 1: gandalf.EmptyRequest
+	(*EmptyResponse)(nil),            // 2: gandalf.EmptyResponse
+	(*TradingSymbol)(nil),            // 3: gandalf.TradingSymbol
+	(*TradingSymbolsResponse)(nil),   // 4: gandalf.TradingSymbolsResponse
+	(*SymbolRequest)(nil),            // 5: gandalf.SymbolRequest
+	(*SymbolBalance)(nil),            // 6: gandalf.SymbolBalance
+	(*SymbolBalancesResponse)(nil),   // 7: gandalf.SymbolBalancesResponse
+	(*SymbolLimit)(nil),              // 8: gandalf.SymbolLimit
+	(*SetSymbolLimitsRequest)(nil),   // 9: gandalf.SetSymbolLimitsRequest
+	(*GetSymbolLimitsRequest)(nil),   // 10: gandalf.GetSymbolLimitsRequest
+	(*SymbolLimitsResponse)(nil),     // 11: gandalf.SymbolLimitsResponse
+	(*DealsRequest)(nil),             // 12: gandalf.DealsRequest
+	(*Deal)(nil),                     // 13: gandalf.Deal
+	(*DealsResponse)(nil),            // 14: gandalf.DealsResponse
+	(*PotentialDeal)(nil),            // 15: gandalf.PotentialDeal
+	(*PotentialDealsResponse)(nil),   // 16: gandalf.PotentialDealsResponse
+	(*Deal_DealPrediction)(nil),      // 17: gandalf.Deal.DealPrediction
+	(*timestamp.Timestamp)(nil),      // 18: google.protobuf.Timestamp
 }
 var file_pb_service_proto_depIdxs = []int32{
-	0, // 0: gandalf.Gandalf.Do:input_type -> gandalf.Request
-	1, // 1: gandalf.Gandalf.Do:output_type -> gandalf.Response
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: gandalf.TradingSymbol.status:type_name -> gandalf.TradingSymbol.TradingStatus
+	3,  // 1: gandalf.TradingSymbolsResponse.symbols:type_name -> gandalf.TradingSymbol
+	6,  // 2: gandalf.SymbolBalancesResponse.balances:type_name -> gandalf.SymbolBalance
+	8,  // 3: gandalf.SetSymbolLimitsRequest.limits:type_name -> gandalf.SymbolLimit
+	8,  // 4: gandalf.SymbolLimitsResponse.limits:type_name -> gandalf.SymbolLimit
+	18, // 5: gandalf.DealsRequest.dateFrom:type_name -> google.protobuf.Timestamp
+	18, // 6: gandalf.DealsRequest.dateTo:type_name -> google.protobuf.Timestamp
+	18, // 7: gandalf.Deal.createdAt:type_name -> google.protobuf.Timestamp
+	17, // 8: gandalf.Deal.prediction:type_name -> gandalf.Deal.DealPrediction
+	13, // 9: gandalf.DealsResponse.deals:type_name -> gandalf.Deal
+	15, // 10: gandalf.PotentialDealsResponse.deal:type_name -> gandalf.PotentialDeal
+	1,  // 11: gandalf.Gandalf.GetTradingSymbols:input_type -> gandalf.EmptyRequest
+	5,  // 12: gandalf.Gandalf.SymbolTradingPrepare:input_type -> gandalf.SymbolRequest
+	5,  // 13: gandalf.Gandalf.SymbolTradingStart:input_type -> gandalf.SymbolRequest
+	5,  // 14: gandalf.Gandalf.SymbolTradingStop:input_type -> gandalf.SymbolRequest
+	5,  // 15: gandalf.Gandalf.SymbolTradingSuspend:input_type -> gandalf.SymbolRequest
+	5,  // 16: gandalf.Gandalf.SymbolTradingResume:input_type -> gandalf.SymbolRequest
+	1,  // 17: gandalf.Gandalf.GetSymbolBalances:input_type -> gandalf.EmptyRequest
+	10, // 18: gandalf.Gandalf.GetSymbolLimits:input_type -> gandalf.GetSymbolLimitsRequest
+	9,  // 19: gandalf.Gandalf.SetSymbolLimits:input_type -> gandalf.SetSymbolLimitsRequest
+	12, // 20: gandalf.Gandalf.GetActiveDeals:input_type -> gandalf.DealsRequest
+	12, // 21: gandalf.Gandalf.GetPotentialDeals:input_type -> gandalf.DealsRequest
+	12, // 22: gandalf.Gandalf.CloseDeals:input_type -> gandalf.DealsRequest
+	4,  // 23: gandalf.Gandalf.GetTradingSymbols:output_type -> gandalf.TradingSymbolsResponse
+	2,  // 24: gandalf.Gandalf.SymbolTradingPrepare:output_type -> gandalf.EmptyResponse
+	2,  // 25: gandalf.Gandalf.SymbolTradingStart:output_type -> gandalf.EmptyResponse
+	2,  // 26: gandalf.Gandalf.SymbolTradingStop:output_type -> gandalf.EmptyResponse
+	2,  // 27: gandalf.Gandalf.SymbolTradingSuspend:output_type -> gandalf.EmptyResponse
+	2,  // 28: gandalf.Gandalf.SymbolTradingResume:output_type -> gandalf.EmptyResponse
+	7,  // 29: gandalf.Gandalf.GetSymbolBalances:output_type -> gandalf.SymbolBalancesResponse
+	11, // 30: gandalf.Gandalf.GetSymbolLimits:output_type -> gandalf.SymbolLimitsResponse
+	2,  // 31: gandalf.Gandalf.SetSymbolLimits:output_type -> gandalf.EmptyResponse
+	14, // 32: gandalf.Gandalf.GetActiveDeals:output_type -> gandalf.DealsResponse
+	16, // 33: gandalf.Gandalf.GetPotentialDeals:output_type -> gandalf.PotentialDealsResponse
+	2,  // 34: gandalf.Gandalf.CloseDeals:output_type -> gandalf.EmptyResponse
+	23, // [23:35] is the sub-list for method output_type
+	11, // [11:23] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_pb_service_proto_init() }
@@ -173,7 +1270,7 @@ func file_pb_service_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_pb_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Request); i {
+			switch v := v.(*EmptyRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -185,7 +1282,187 @@ func file_pb_service_proto_init() {
 			}
 		}
 		file_pb_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Response); i {
+			switch v := v.(*EmptyResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TradingSymbol); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TradingSymbolsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SymbolRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SymbolBalance); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SymbolBalancesResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SymbolLimit); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetSymbolLimitsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetSymbolLimitsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SymbolLimitsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DealsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Deal); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DealsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PotentialDeal); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PotentialDealsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_service_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Deal_DealPrediction); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -202,13 +1479,14 @@ func file_pb_service_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pb_service_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_pb_service_proto_goTypes,
 		DependencyIndexes: file_pb_service_proto_depIdxs,
+		EnumInfos:         file_pb_service_proto_enumTypes,
 		MessageInfos:      file_pb_service_proto_msgTypes,
 	}.Build()
 	File_pb_service_proto = out.File
@@ -229,7 +1507,18 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type GandalfClient interface {
-	Do(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	GetTradingSymbols(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*TradingSymbolsResponse, error)
+	SymbolTradingPrepare(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	SymbolTradingStart(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	SymbolTradingStop(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	SymbolTradingSuspend(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	SymbolTradingResume(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	GetSymbolBalances(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*SymbolBalancesResponse, error)
+	GetSymbolLimits(ctx context.Context, in *GetSymbolLimitsRequest, opts ...grpc.CallOption) (*SymbolLimitsResponse, error)
+	SetSymbolLimits(ctx context.Context, in *SetSymbolLimitsRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	GetActiveDeals(ctx context.Context, in *DealsRequest, opts ...grpc.CallOption) (*DealsResponse, error)
+	GetPotentialDeals(ctx context.Context, in *DealsRequest, opts ...grpc.CallOption) (*PotentialDealsResponse, error)
+	CloseDeals(ctx context.Context, in *DealsRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 }
 
 type gandalfClient struct {
@@ -240,9 +1529,108 @@ func NewGandalfClient(cc grpc.ClientConnInterface) GandalfClient {
 	return &gandalfClient{cc}
 }
 
-func (c *gandalfClient) Do(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/Do", in, out, opts...)
+func (c *gandalfClient) GetTradingSymbols(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*TradingSymbolsResponse, error) {
+	out := new(TradingSymbolsResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/GetTradingSymbols", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) SymbolTradingPrepare(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/SymbolTradingPrepare", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) SymbolTradingStart(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/SymbolTradingStart", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) SymbolTradingStop(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/SymbolTradingStop", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) SymbolTradingSuspend(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/SymbolTradingSuspend", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) SymbolTradingResume(ctx context.Context, in *SymbolRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/SymbolTradingResume", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) GetSymbolBalances(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*SymbolBalancesResponse, error) {
+	out := new(SymbolBalancesResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/GetSymbolBalances", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) GetSymbolLimits(ctx context.Context, in *GetSymbolLimitsRequest, opts ...grpc.CallOption) (*SymbolLimitsResponse, error) {
+	out := new(SymbolLimitsResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/GetSymbolLimits", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) SetSymbolLimits(ctx context.Context, in *SetSymbolLimitsRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/SetSymbolLimits", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) GetActiveDeals(ctx context.Context, in *DealsRequest, opts ...grpc.CallOption) (*DealsResponse, error) {
+	out := new(DealsResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/GetActiveDeals", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) GetPotentialDeals(ctx context.Context, in *DealsRequest, opts ...grpc.CallOption) (*PotentialDealsResponse, error) {
+	out := new(PotentialDealsResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/GetPotentialDeals", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gandalfClient) CloseDeals(ctx context.Context, in *DealsRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/gandalf.Gandalf/CloseDeals", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -251,35 +1639,277 @@ func (c *gandalfClient) Do(ctx context.Context, in *Request, opts ...grpc.CallOp
 
 // GandalfServer is the server API for Gandalf service.
 type GandalfServer interface {
-	Do(context.Context, *Request) (*Response, error)
+	GetTradingSymbols(context.Context, *EmptyRequest) (*TradingSymbolsResponse, error)
+	SymbolTradingPrepare(context.Context, *SymbolRequest) (*EmptyResponse, error)
+	SymbolTradingStart(context.Context, *SymbolRequest) (*EmptyResponse, error)
+	SymbolTradingStop(context.Context, *SymbolRequest) (*EmptyResponse, error)
+	SymbolTradingSuspend(context.Context, *SymbolRequest) (*EmptyResponse, error)
+	SymbolTradingResume(context.Context, *SymbolRequest) (*EmptyResponse, error)
+	GetSymbolBalances(context.Context, *EmptyRequest) (*SymbolBalancesResponse, error)
+	GetSymbolLimits(context.Context, *GetSymbolLimitsRequest) (*SymbolLimitsResponse, error)
+	SetSymbolLimits(context.Context, *SetSymbolLimitsRequest) (*EmptyResponse, error)
+	GetActiveDeals(context.Context, *DealsRequest) (*DealsResponse, error)
+	GetPotentialDeals(context.Context, *DealsRequest) (*PotentialDealsResponse, error)
+	CloseDeals(context.Context, *DealsRequest) (*EmptyResponse, error)
 }
 
 // UnimplementedGandalfServer can be embedded to have forward compatible implementations.
 type UnimplementedGandalfServer struct {
 }
 
-func (*UnimplementedGandalfServer) Do(context.Context, *Request) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Do not implemented")
+func (*UnimplementedGandalfServer) GetTradingSymbols(context.Context, *EmptyRequest) (*TradingSymbolsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTradingSymbols not implemented")
+}
+func (*UnimplementedGandalfServer) SymbolTradingPrepare(context.Context, *SymbolRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SymbolTradingPrepare not implemented")
+}
+func (*UnimplementedGandalfServer) SymbolTradingStart(context.Context, *SymbolRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SymbolTradingStart not implemented")
+}
+func (*UnimplementedGandalfServer) SymbolTradingStop(context.Context, *SymbolRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SymbolTradingStop not implemented")
+}
+func (*UnimplementedGandalfServer) SymbolTradingSuspend(context.Context, *SymbolRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SymbolTradingSuspend not implemented")
+}
+func (*UnimplementedGandalfServer) SymbolTradingResume(context.Context, *SymbolRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SymbolTradingResume not implemented")
+}
+func (*UnimplementedGandalfServer) GetSymbolBalances(context.Context, *EmptyRequest) (*SymbolBalancesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSymbolBalances not implemented")
+}
+func (*UnimplementedGandalfServer) GetSymbolLimits(context.Context, *GetSymbolLimitsRequest) (*SymbolLimitsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSymbolLimits not implemented")
+}
+func (*UnimplementedGandalfServer) SetSymbolLimits(context.Context, *SetSymbolLimitsRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetSymbolLimits not implemented")
+}
+func (*UnimplementedGandalfServer) GetActiveDeals(context.Context, *DealsRequest) (*DealsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveDeals not implemented")
+}
+func (*UnimplementedGandalfServer) GetPotentialDeals(context.Context, *DealsRequest) (*PotentialDealsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPotentialDeals not implemented")
+}
+func (*UnimplementedGandalfServer) CloseDeals(context.Context, *DealsRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CloseDeals not implemented")
 }
 
 func RegisterGandalfServer(s *grpc.Server, srv GandalfServer) {
 	s.RegisterService(&_Gandalf_serviceDesc, srv)
 }
 
-func _Gandalf_Do_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
+func _Gandalf_GetTradingSymbols_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GandalfServer).Do(ctx, in)
+		return srv.(GandalfServer).GetTradingSymbols(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/gandalf.Gandalf/Do",
+		FullMethod: "/gandalf.Gandalf/GetTradingSymbols",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GandalfServer).Do(ctx, req.(*Request))
+		return srv.(GandalfServer).GetTradingSymbols(ctx, req.(*EmptyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_SymbolTradingPrepare_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SymbolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).SymbolTradingPrepare(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/SymbolTradingPrepare",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).SymbolTradingPrepare(ctx, req.(*SymbolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_SymbolTradingStart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SymbolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).SymbolTradingStart(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/SymbolTradingStart",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).SymbolTradingStart(ctx, req.(*SymbolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_SymbolTradingStop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SymbolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).SymbolTradingStop(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/SymbolTradingStop",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).SymbolTradingStop(ctx, req.(*SymbolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_SymbolTradingSuspend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SymbolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).SymbolTradingSuspend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/SymbolTradingSuspend",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).SymbolTradingSuspend(ctx, req.(*SymbolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_SymbolTradingResume_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SymbolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).SymbolTradingResume(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/SymbolTradingResume",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).SymbolTradingResume(ctx, req.(*SymbolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_GetSymbolBalances_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).GetSymbolBalances(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/GetSymbolBalances",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).GetSymbolBalances(ctx, req.(*EmptyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_GetSymbolLimits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSymbolLimitsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).GetSymbolLimits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/GetSymbolLimits",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).GetSymbolLimits(ctx, req.(*GetSymbolLimitsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_SetSymbolLimits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetSymbolLimitsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).SetSymbolLimits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/SetSymbolLimits",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).SetSymbolLimits(ctx, req.(*SetSymbolLimitsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_GetActiveDeals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DealsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).GetActiveDeals(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/GetActiveDeals",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).GetActiveDeals(ctx, req.(*DealsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_GetPotentialDeals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DealsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).GetPotentialDeals(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/GetPotentialDeals",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).GetPotentialDeals(ctx, req.(*DealsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Gandalf_CloseDeals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DealsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GandalfServer).CloseDeals(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gandalf.Gandalf/CloseDeals",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GandalfServer).CloseDeals(ctx, req.(*DealsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -289,8 +1919,52 @@ var _Gandalf_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*GandalfServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Do",
-			Handler:    _Gandalf_Do_Handler,
+			MethodName: "GetTradingSymbols",
+			Handler:    _Gandalf_GetTradingSymbols_Handler,
+		},
+		{
+			MethodName: "SymbolTradingPrepare",
+			Handler:    _Gandalf_SymbolTradingPrepare_Handler,
+		},
+		{
+			MethodName: "SymbolTradingStart",
+			Handler:    _Gandalf_SymbolTradingStart_Handler,
+		},
+		{
+			MethodName: "SymbolTradingStop",
+			Handler:    _Gandalf_SymbolTradingStop_Handler,
+		},
+		{
+			MethodName: "SymbolTradingSuspend",
+			Handler:    _Gandalf_SymbolTradingSuspend_Handler,
+		},
+		{
+			MethodName: "SymbolTradingResume",
+			Handler:    _Gandalf_SymbolTradingResume_Handler,
+		},
+		{
+			MethodName: "GetSymbolBalances",
+			Handler:    _Gandalf_GetSymbolBalances_Handler,
+		},
+		{
+			MethodName: "GetSymbolLimits",
+			Handler:    _Gandalf_GetSymbolLimits_Handler,
+		},
+		{
+			MethodName: "SetSymbolLimits",
+			Handler:    _Gandalf_SetSymbolLimits_Handler,
+		},
+		{
+			MethodName: "GetActiveDeals",
+			Handler:    _Gandalf_GetActiveDeals_Handler,
+		},
+		{
+			MethodName: "GetPotentialDeals",
+			Handler:    _Gandalf_GetPotentialDeals_Handler,
+		},
+		{
+			MethodName: "CloseDeals",
+			Handler:    _Gandalf_CloseDeals_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
