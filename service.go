@@ -9,8 +9,10 @@ import (
 	"go.uber.org/zap"
 )
 
-type Service struct {
-	logger *zap.SugaredLogger
+type Server struct {
+	logger        *zap.SugaredLogger
+	userOperators []int64
+	userViewers   []int64
 
 	// Mock fields
 	symbols []tradingSymbol
@@ -21,11 +23,21 @@ type tradingSymbol struct {
 	status pb.TradingSymbol_TradingStatus
 }
 
-func NewService(
+var (
+	errUserNotOperator = errors.New("you are not authorized to perform this operation")
+	errUserNotViewer   = errors.New("you are not authorized to view this data")
+)
+
+func NewServer(
 	logger *zap.SugaredLogger,
-) *Service {
-	return &Service{
-		logger: logger,
+	userOperators []int64,
+	userViewers []int64,
+) *Server {
+	return &Server{
+		logger:        logger,
+		userOperators: userOperators,
+		userViewers:   userViewers,
+
 		symbols: []tradingSymbol{
 			{"adausdt", pb.TradingSymbol_ACTIVE},
 			{"linkusdt", pb.TradingSymbol_ACTIVE},
@@ -35,7 +47,11 @@ func NewService(
 	}
 }
 
-func (s *Service) GetTradingSymbols(context.Context, *pb.EmptyRequest) (*pb.TradingSymbolsResponse, error) {
+func (s *Server) GetTradingSymbols(_ context.Context, req *pb.EmptyRequest) (*pb.TradingSymbolsResponse, error) {
+	if err := s.checkUserViewer(req.UserId); err != nil {
+		return nil, err
+	}
+
 	symbols := make([]*pb.TradingSymbol, 0, len(s.symbols))
 	for _, symbol := range s.symbols {
 		symbols = append(symbols, &pb.TradingSymbol{
@@ -49,7 +65,11 @@ func (s *Service) GetTradingSymbols(context.Context, *pb.EmptyRequest) (*pb.Trad
 	}, nil
 }
 
-func (s *Service) SymbolTradingPrepare(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingPrepare(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	for _, symbol := range s.symbols {
 		if symbol.symbol == req.Symbol {
 			return nil, errors.New(fmt.Sprintf("%s is already in trading", req.Symbol))
@@ -62,42 +82,105 @@ func (s *Service) SymbolTradingPrepare(_ context.Context, req *pb.SymbolRequest)
 	return &pb.EmptyResponse{}, nil
 }
 
-func (s *Service) SymbolTradingStart(context.Context, *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingStart(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) SymbolTradingStop(context.Context, *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingStop(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) SymbolTradingSuspend(context.Context, *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingSuspend(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) SymbolTradingResume(context.Context, *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingResume(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) GetSymbolBalances(context.Context, *pb.EmptyRequest) (*pb.SymbolBalancesResponse, error) {
+func (s *Server) GetSymbolBalances(_ context.Context, req *pb.EmptyRequest) (*pb.SymbolBalancesResponse, error) {
+	if err := s.checkUserViewer(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) GetSymbolLimits(context.Context, *pb.GetSymbolLimitsRequest) (*pb.SymbolLimitsResponse, error) {
+func (s *Server) GetSymbolLimits(_ context.Context, req *pb.GetSymbolLimitsRequest) (*pb.SymbolLimitsResponse, error) {
+	if err := s.checkUserViewer(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) SetSymbolLimits(context.Context, *pb.SetSymbolLimitsRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SetSymbolLimits(_ context.Context, req *pb.SetSymbolLimitsRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) GetActiveDeals(context.Context, *pb.DealsRequest) (*pb.DealsResponse, error) {
+func (s *Server) GetActiveDeals(_ context.Context, req *pb.DealsRequest) (*pb.DealsResponse, error) {
+	if err := s.checkUserViewer(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) GetPotentialDeals(context.Context, *pb.DealsRequest) (*pb.PotentialDealsResponse, error) {
+func (s *Server) GetPotentialDeals(_ context.Context, req *pb.DealsRequest) (*pb.PotentialDealsResponse, error) {
+	if err := s.checkUserViewer(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
 }
 
-func (s *Service) CloseDeals(context.Context, *pb.DealsRequest) (*pb.EmptyResponse, error) {
+func (s *Server) CloseDeals(_ context.Context, req *pb.DealsRequest) (*pb.EmptyResponse, error) {
+	if err := s.checkUserOperator(req.UserId); err != nil {
+		return nil, err
+	}
+
 	panic("implement me")
+}
+
+func (s *Server) checkUserOperator(userId int64) error {
+	if !int64InList(userId, s.userOperators) {
+		return errUserNotOperator
+	}
+	return nil
+}
+
+func (s *Server) checkUserViewer(userId int64) error {
+	if !int64InList(userId, s.userOperators) {
+		return errUserNotViewer
+	}
+	return nil
+}
+
+func int64InList(n int64, list []int64) bool {
+	for _, i := range list {
+		if i == n {
+			return true
+		}
+	}
+	return false
 }

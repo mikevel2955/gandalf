@@ -23,7 +23,9 @@ service Gandalf {
     rpc CloseDeals(DealsRequest) returns (EmptyResponse);
 }
 
-message EmptyRequest {}
+message EmptyRequest {
+    int64 userId = 1;
+}
 
 message EmptyResponse {}
 
@@ -43,7 +45,8 @@ message TradingSymbolsResponse {
 }
 
 message SymbolRequest {
-    string symbol = 1;
+    int64 userId = 1;
+    string symbol = 3;
 }
 
 message SymbolBalance {
@@ -60,12 +63,14 @@ message SymbolLimit {
     float limit = 3;
 }
 
-message SetSymbolLimitsRequest {
-    repeated SymbolLimit limits = 1;
+message GetSymbolLimitsRequest {
+    int64 userId = 1;
+    repeated string symbols = 3;
 }
 
-message GetSymbolLimitsRequest {
-    repeated string symbols = 1;
+message SetSymbolLimitsRequest {
+    int64 userId = 1;
+    repeated SymbolLimit limits = 3;
 }
 
 message SymbolLimitsResponse {
@@ -73,10 +78,11 @@ message SymbolLimitsResponse {
 }
 
 message DealsRequest {
-    bool all = 1;
-    repeated string symbols = 3;
-    google.protobuf.Timestamp dateFrom = 5;
-    google.protobuf.Timestamp dateTo = 7;
+    int64 userId = 1;
+    bool all = 3;
+    repeated string symbols = 5;
+    google.protobuf.Timestamp dateFrom = 7;
+    google.protobuf.Timestamp dateTo = 9;
 }
 
 message Deal {
@@ -85,7 +91,7 @@ message Deal {
         float max = 3;
     }
 
-    int64 dealId = 1; // possible format d-165738457656-adausdt or use Huobi's order id
+    string dealId = 1; // possible format d-165738457656-adausdt or use Huobi's order id
     string symbol = 3;
     google.protobuf.Timestamp createdAt = 5;
     float amount = 7;
