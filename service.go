@@ -19,8 +19,9 @@ type Server struct {
 }
 
 type tradingSymbol struct {
-	symbol string
-	status pb.TradingSymbol_TradingStatus
+	symbol  string
+	status  pb.TradingSymbol_TradingStatus
+	balance float32
 }
 
 var (
@@ -39,10 +40,10 @@ func NewServer(
 		userViewers:   userViewers,
 
 		symbols: []tradingSymbol{
-			{"adausdt", pb.TradingSymbol_ACTIVE},
-			{"linkusdt", pb.TradingSymbol_ACTIVE},
-			{"zilusdt", pb.TradingSymbol_ACTIVE},
-			{"ltcusdt", pb.TradingSymbol_ACTIVE},
+			{"adausdt", pb.TradingSymbol_ACTIVE, 55},
+			{"linkusdt", pb.TradingSymbol_ACTIVE, 66},
+			{"zilusdt", pb.TradingSymbol_ACTIVE, 33},
+			{"ltcusdt", pb.TradingSymbol_ACTIVE, 22},
 		},
 	}
 }
@@ -119,7 +120,17 @@ func (s *Server) GetSymbolBalances(_ context.Context, req *pb.EmptyRequest) (*pb
 		return nil, err
 	}
 
-	panic("implement me")
+	var balances []*pb.SymbolBalance
+	for _, symbol := range s.symbols {
+		balances = append(balances, &pb.SymbolBalance{
+			Symbol: symbol.symbol,
+			Amount: symbol.balance,
+		})
+	}
+
+	return &pb.SymbolBalancesResponse{
+		Balances: balances,
+	}, nil
 }
 
 func (s *Server) GetSymbolLimits(_ context.Context, req *pb.GetSymbolLimitsRequest) (*pb.SymbolLimitsResponse, error) {

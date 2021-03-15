@@ -51,6 +51,7 @@ func main() {
 	logger.Info("gandalf stopped")
 }
 
+// TODO move it to hermes-utils
 func parseInts(logger *zap.SugaredLogger, srcName, src string) []int64 {
 	ss := strings.Split(src, ",")
 	ints := make([]int64, 0, len(ss))
