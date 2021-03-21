@@ -83,6 +83,7 @@ message DealsRequest {
     repeated string symbols = 5;
     google.protobuf.Timestamp dateFrom = 7;
     google.protobuf.Timestamp dateTo = 9;
+    repeated string dealIds = 11;
 }
 
 message Deal {
