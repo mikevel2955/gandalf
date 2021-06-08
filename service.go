@@ -14,17 +14,7 @@ type Server struct {
 	logger        *zap.SugaredLogger
 	userOperators []int64
 	userViewers   []int64
-
-	// Mock fields
-	symbols []tradingSymbol
-	deals   []*pb.Deal
-}
-
-type tradingSymbol struct {
-	symbol  string
-	status  pb.TradingSymbol_TradingStatus
-	balance float32
-	limit   float32
+	storage       *Storage
 }
 
 var (
@@ -42,68 +32,31 @@ func NewServer(
 	logger *zap.SugaredLogger,
 	userOperators []int64,
 	userViewers []int64,
+	storage *Storage,
 ) *Server {
 	return &Server{
 		logger:        logger,
 		userOperators: userOperators,
 		userViewers:   userViewers,
-
-		symbols: []tradingSymbol{
-			{"adausdt", pb.TradingSymbol_ACTIVE, 55, 100},
-			{"linkusdt", pb.TradingSymbol_ACTIVE, 66, 100},
-			{"zilusdt", pb.TradingSymbol_ACTIVE, 33, 100},
-			{"ltcusdt", pb.TradingSymbol_ACTIVE, 22, 100},
-		},
-		deals: []*pb.Deal{{
-			DealId:         "adausdt-1657483456",
-			Symbol:         "adausdt",
-			CreatedAt:      timestamppb.Now(),
-			Amount:         0.01,
-			AmountCurrency: 361,
-			DeltaAmount:    -12,
-			DeltaPercent:   -2,
-			Prediction: &pb.Deal_DealPrediction{
-				Stop: -3,
-				Max:  2,
-			},
-		}, {
-			DealId:         "adausdt-1630958723",
-			Symbol:         "adausdt",
-			CreatedAt:      timestamppb.Now(),
-			Amount:         0.04,
-			AmountCurrency: 734,
-			DeltaAmount:    15,
-			DeltaPercent:   2,
-			Prediction: &pb.Deal_DealPrediction{
-				Stop: -5,
-				Max:  7,
-			},
-		}, {
-			DealId:         "linkusdt-1630958723",
-			Symbol:         "linkusdt",
-			CreatedAt:      timestamppb.Now(),
-			Amount:         0.5,
-			AmountCurrency: 154,
-			DeltaAmount:    7,
-			DeltaPercent:   5,
-			Prediction: &pb.Deal_DealPrediction{
-				Stop: -15,
-				Max:  7,
-			},
-		}},
+		storage:       storage,
 	}
 }
 
-func (s *Server) GetTradingSymbols(_ context.Context, req *pb.EmptyRequest) (*pb.TradingSymbolsResponse, error) {
+func (s *Server) GetTradingSymbols(ctx context.Context, req *pb.EmptyRequest) (*pb.TradingSymbolsResponse, error) {
 	if err := s.checkUserViewer(req.UserId); err != nil {
 		return nil, err
 	}
 
-	symbols := make([]*pb.TradingSymbol, 0, len(s.symbols))
-	for _, symbol := range s.symbols {
+	tradingSymbols, err := s.storage.GetTradingSymbols(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var symbols []*pb.TradingSymbol
+	for _, symbol := range tradingSymbols {
 		symbols = append(symbols, &pb.TradingSymbol{
-			Symbol: symbol.symbol,
-			Status: symbol.status,
+			Symbol: symbol.Symbol,
+			Status: symbol.Status,
 		})
 	}
 
@@ -112,75 +65,83 @@ func (s *Server) GetTradingSymbols(_ context.Context, req *pb.EmptyRequest) (*pb
 	}, nil
 }
 
-func (s *Server) SymbolTradingPrepare(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingPrepare(ctx context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
-	for _, symbol := range s.symbols {
-		if symbol.symbol == req.Symbol {
-			return nil, errors.New(fmt.Sprintf("%s is already in trading", req.Symbol))
-		}
+	tradingSymbol, err := s.storage.GetTradingSymbol(ctx, req.Symbol)
+	if err != nil {
+		return nil, err
 	}
-	s.symbols = append(s.symbols, tradingSymbol{
-		symbol: req.Symbol,
-		status: pb.TradingSymbol_PREPARING,
-	})
+	if tradingSymbol != nil {
+		return nil, errors.New(fmt.Sprintf("%s is already in trading", req.Symbol))
+	}
+
+	tradingSymbol = &TradingSymbol{req.Symbol, pb.TradingSymbol_PREPARING, 0, 100}
+	if err := s.storage.SaveTradingSymbol(ctx, tradingSymbol); err != nil {
+		return nil, err
+	}
+
 	return &pb.EmptyResponse{}, nil
 }
 
-func (s *Server) SymbolTradingStart(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingStart(ctx context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
-	return s.setSymbolStatus(req.Symbol, pb.TradingSymbol_ACTIVE)
+	return s.setSymbolStatus(ctx, req.Symbol, pb.TradingSymbol_ACTIVE)
 }
 
-func (s *Server) SymbolTradingStop(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingStop(ctx context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
-	n, err := s.findSymbolIndex(req.Symbol)
+	err := s.storage.DeleteTradingSymbol(ctx, req.Symbol)
 	if err != nil {
 		return nil, err
 	}
 
-	s.symbols = append(s.symbols[:n], s.symbols[n+1:]...)
-
 	return &pb.EmptyResponse{}, nil
 }
 
-func (s *Server) SymbolTradingSuspend(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingSuspend(ctx context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
-	return s.setSymbolStatus(req.Symbol, pb.TradingSymbol_SUSPENDED)
+	return s.setSymbolStatus(ctx, req.Symbol, pb.TradingSymbol_SUSPENDED)
 }
 
-func (s *Server) SymbolTradingResume(_ context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SymbolTradingResume(ctx context.Context, req *pb.SymbolRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
-	return s.setSymbolStatus(req.Symbol, pb.TradingSymbol_ACTIVE)
+	return s.setSymbolStatus(ctx, req.Symbol, pb.TradingSymbol_ACTIVE)
 }
 
-func (s *Server) GetSymbolBalances(_ context.Context, req *pb.EmptyRequest) (*pb.SymbolBalancesResponse, error) {
+func (s *Server) GetSymbolBalances(ctx context.Context, req *pb.EmptyRequest) (*pb.SymbolBalancesResponse, error) {
 	if err := s.checkUserViewer(req.UserId); err != nil {
+		return nil, err
+	}
+
+	tradingSymbols, err := s.storage.GetTradingSymbols(ctx)
+	if err != nil {
 		return nil, err
 	}
 
 	var balances []*pb.SymbolBalance
 	var total float32
-	for _, symbol := range s.symbols {
+
+	for _, symbol := range tradingSymbols {
 		balances = append(balances, &pb.SymbolBalance{
-			Symbol: symbol.symbol,
-			Amount: symbol.balance,
+			Symbol: symbol.Symbol,
+			Amount: symbol.Balance,
 		})
-		total += symbol.balance
+		total += symbol.Balance
 	}
 
 	balances = append(balances, &pb.SymbolBalance{
@@ -193,16 +154,22 @@ func (s *Server) GetSymbolBalances(_ context.Context, req *pb.EmptyRequest) (*pb
 	}, nil
 }
 
-func (s *Server) GetSymbolLimits(_ context.Context, req *pb.GetSymbolLimitsRequest) (*pb.SymbolLimitsResponse, error) {
+func (s *Server) GetSymbolLimits(ctx context.Context, req *pb.GetSymbolLimitsRequest) (*pb.SymbolLimitsResponse, error) {
 	if err := s.checkUserViewer(req.UserId); err != nil {
 		return nil, err
 	}
 
-	limits := make([]*pb.SymbolLimit, 0, len(s.symbols))
-	for _, symbol := range s.symbols {
+	tradingSymbols, err := s.storage.GetTradingSymbols(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var limits []*pb.SymbolLimit
+
+	for _, symbol := range tradingSymbols {
 		limits = append(limits, &pb.SymbolLimit{
-			Symbol: symbol.symbol,
-			Limit:  symbol.limit,
+			Symbol: symbol.Symbol,
+			Limit:  symbol.Limit,
 		})
 	}
 
@@ -211,31 +178,59 @@ func (s *Server) GetSymbolLimits(_ context.Context, req *pb.GetSymbolLimitsReque
 	}, nil
 }
 
-func (s *Server) SetSymbolLimits(_ context.Context, req *pb.SetSymbolLimitsRequest) (*pb.EmptyResponse, error) {
+func (s *Server) SetSymbolLimits(ctx context.Context, req *pb.SetSymbolLimitsRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
 	for _, limit := range req.Limits {
-		n, err := s.findSymbolIndex(limit.Symbol)
+		tradingSymbol, err := s.storage.GetTradingSymbol(ctx, limit.Symbol)
 		if err != nil {
 			return nil, err
 		}
+		if tradingSymbol == nil {
+			return nil, errSymbolNotFound(limit.Symbol)
+		}
 
-		s.symbols[n].limit = limit.Limit
+		tradingSymbol.Limit = limit.Limit
+		if err := s.storage.SaveTradingSymbol(ctx, tradingSymbol); err != nil {
+			return nil, err
+		}
 	}
 
 	return &pb.EmptyResponse{}, nil
 }
 
-func (s *Server) GetActiveDeals(_ context.Context, req *pb.DealsRequest) (*pb.DealsResponse, error) {
+func (s *Server) GetActiveDeals(ctx context.Context, req *pb.DealsRequest) (*pb.DealsResponse, error) {
 	if err := s.checkUserViewer(req.UserId); err != nil {
 		return nil, err
 	}
 
 	if req.All {
+		deals, err := s.storage.GetDeals(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		var activeDeals []*pb.Deal
+		for _, deal := range deals {
+			activeDeals = append(activeDeals, &pb.Deal{
+				DealId:         deal.Id,
+				Symbol:         deal.Symbol,
+				CreatedAt:      timestamppb.New(deal.CreatedAt),
+				Amount:         deal.Amount,
+				AmountCurrency: deal.AmountCurrency,
+				DeltaAmount:    deal.DeltaAmount,
+				DeltaPercent:   deal.DeltaPercent,
+				Prediction: &pb.Deal_DealPrediction{
+					Stop: deal.Prediction.Stop,
+					Max:  deal.Prediction.Max,
+				},
+			})
+		}
+
 		return &pb.DealsResponse{
-			Deals: s.deals,
+			Deals: activeDeals,
 		}, nil
 	}
 
@@ -250,22 +245,37 @@ func (s *Server) GetPotentialDeals(_ context.Context, req *pb.DealsRequest) (*pb
 	panic("implement me")
 }
 
-func (s *Server) CloseDeals(_ context.Context, req *pb.DealsRequest) (*pb.EmptyResponse, error) {
+func (s *Server) CloseDeals(ctx context.Context, req *pb.DealsRequest) (*pb.EmptyResponse, error) {
 	if err := s.checkUserOperator(req.UserId); err != nil {
 		return nil, err
 	}
 
 	if req.All {
-		s.deals = []*pb.Deal{}
+		deals, err := s.storage.GetDeals(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, deal := range deals {
+			if err := s.storage.DeleteDeal(ctx, deal.Id); err != nil {
+				return nil, err
+			}
+		}
 		return &pb.EmptyResponse{}, nil
 	}
 
 	for _, dealId := range req.DealIds {
-		n, err := s.findDealIndex(dealId)
+		deal, err := s.storage.GetDeal(ctx, dealId)
 		if err != nil {
 			return nil, err
 		}
-		s.deals = append(s.deals[:n], s.deals[n+1:]...)
+
+		if deal == nil {
+			return nil, errDealNotFound(dealId)
+		}
+
+		if err := s.storage.DeleteDeal(ctx, deal.Id); err != nil {
+			return nil, err
+		}
 	}
 
 	return &pb.EmptyResponse{}, nil
@@ -285,33 +295,26 @@ func (s *Server) checkUserViewer(userId int64) error {
 	return nil
 }
 
-func (s *Server) setSymbolStatus(symbol string, status pb.TradingSymbol_TradingStatus) (*pb.EmptyResponse, error) {
-	n, err := s.findSymbolIndex(symbol)
+func (s *Server) setSymbolStatus(
+	ctx context.Context,
+	symbol string,
+	status pb.TradingSymbol_TradingStatus,
+) (*pb.EmptyResponse, error) {
+	tradingSymbol, err := s.storage.GetTradingSymbol(ctx, symbol)
 	if err != nil {
 		return nil, err
 	}
 
-	s.symbols[n].status = status
+	if tradingSymbol == nil {
+		return nil, errSymbolNotFound(symbol)
+	}
+
+	tradingSymbol.Status = status
+	if err := s.storage.SaveTradingSymbol(ctx, tradingSymbol); err != nil {
+		return nil, err
+	}
 
 	return &pb.EmptyResponse{}, nil
-}
-
-func (s *Server) findSymbolIndex(symbol string) (int, error) {
-	for i := range s.symbols {
-		if s.symbols[i].symbol == symbol {
-			return i, nil
-		}
-	}
-	return -1, errSymbolNotFound(symbol)
-}
-
-func (s *Server) findDealIndex(dealId string) (int, error) {
-	for n := range s.deals {
-		if s.deals[n].DealId == dealId {
-			return n, nil
-		}
-	}
-	return -1, errDealNotFound(dealId)
 }
 
 func int64InList(n int64, list []int64) bool {
